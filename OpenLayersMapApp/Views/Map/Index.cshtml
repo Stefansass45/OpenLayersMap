@@ -1,0 +1,60 @@
+﻿@model IEnumerable<OpenLayersMapApp.Models.Location>
+
+@{
+    ViewBag.Title = "Map with OpenLayers";
+}
+
+<h2>Map with Pinpointed Locations</h2>
+
+<!-- Include OpenLayers CSS and JS via CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.15.1/css/ol.css" type="text/css">
+<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.15.1/build/ol.js"></script>
+
+<!-- Map container -->
+<div id="map" style="width: 100%; height: 600px;"></div>
+
+<script type="text/javascript">
+    // Initialize the map
+    var map = new ol.Map({
+        target: 'map',
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM()  // OpenStreetMap as base layer
+            })
+        ],
+        view: new ol.View({
+            center: ol.proj.fromLonLat([0, 0]),  // Center on world
+            zoom: 2  // Initial zoom level
+        })
+    });
+
+    // Create a vector layer for markers
+    var vectorSource = new ol.source.Vector();
+    var vectorLayer = new ol.layer.Vector({
+        source: vectorSource,
+        style: new ol.style.Style({
+            image: new ol.style.Icon({
+                anchor: [0.5, 1],
+                src: 'https://openlayers.org/en/latest/examples/data/icon.png'  // Default pin icon (or use your own)
+            })
+        })
+    });
+    map.addLayer(vectorLayer);
+
+    // Add markers from MVC model data
+    @foreach (var location in Model)
+    {
+            <text>
+            var feature = new ol.Feature({
+                geometry: new ol.geom.Point(ol.proj.fromLonLat([@location.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture), @location.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)])),
+                name: '@location.Name'
+            });
+            vectorSource.addFeature(feature);
+            </text>
+    }
+
+    // Optional: Zoom to fit all markers
+    if (vectorSource.getFeatures().length > 0) {
+        map.getView().fit(vectorSource.getExtent(), { padding: [50, 50, 50, 50] });
+    }
+</script>
